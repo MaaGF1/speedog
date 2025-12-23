@@ -29,10 +29,12 @@ class LogMonitor:
         self.stop_event = threading.Event()
         
         # Log patterns
+        # Escaped brackets \[ \] to match literal characters instead of regex character sets
         self.node_patterns = {
-            'start': re.compile(r'[pipeline_data\.name=(.*?)]\s*\|\s*enter', re.IGNORECASE),
-            'complete': re.compile(r'[pipeline_data\.name=(.*?)]\s*\|\s*complete', re.IGNORECASE),
-            'general': re.compile(r'[(?:node_name|pipeline_data\.name)=(.*?)](?!.*(?:list=|result\.name=))', re.IGNORECASE)
+            'start': re.compile(r'\[pipeline_data\.name=(.*?)\]\s*\|\s*enter', re.IGNORECASE),
+            'complete': re.compile(r'\[pipeline_data\.name=(.*?)\]\s*\|\s*complete', re.IGNORECASE),
+            # Fallback pattern
+            'general': re.compile(r'(?:node_name|pipeline_data\.name)=(.*?)(?:\]|\s|$)', re.IGNORECASE)
         }
         
         self.log_file: Optional[TextIO] = None
@@ -101,6 +103,8 @@ class LogMonitor:
                         self._process_log_line(line.strip())
             except Exception as e:
                 print(f"Monitor loop error: {e}")
+                # import traceback
+                # traceback.print_exc()
     
     def _read_new_log_lines(self) -> List[str]:
         if not self.log_file:
@@ -145,8 +149,11 @@ class LogMonitor:
         for pattern in [self.node_patterns['start'], self.node_patterns['complete'], self.node_patterns['general']]:
             match = pattern.search(line)
             if match:
-                node_name = match.group(1).strip()
-                break
+                try:
+                    node_name = match.group(1).strip()
+                    break
+                except IndexError:
+                    continue
         
         if not node_name:
             return
