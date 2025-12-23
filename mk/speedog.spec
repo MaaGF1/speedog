@@ -28,7 +28,7 @@ a = Analysis(
     pathex=[src_path],
     binaries=[],
     datas=[
-        (os.path.join(src_path, 'watchdog.conf'), '.')
+        (os.path.join(src_path, 'speedog.conf'), '.')
     ],
     hiddenimports=[],
     hookspath=[],
