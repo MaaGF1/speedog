@@ -96,16 +96,16 @@ jobs:
       - name: Prepare Artifact
         shell: bash
         run: |
-          # Define artifact name based on platform and arch (e.g., logdog-win-x86_64)
-          ARTIFACT_NAME="logdog-${{ matrix.target_os }}-${{ matrix.arch }}"
+          # Define artifact name based on platform and arch (e.g., speedog-win-x86_64)
+          ARTIFACT_NAME="speedog-${{ matrix.target_os }}-${{ matrix.arch }}"
           mkdir -p upload_stage
           
           # Copy build artifacts to upload directory
-          # Assuming PyInstaller generates a folder named 'logdog' in 'dist'
-          if [ -d "dist/logdog" ]; then
-            cp -r dist/logdog "upload_stage/$ARTIFACT_NAME"
+          # Assuming PyInstaller generates a folder named 'speedog' in 'dist'
+          if [ -d "dist/speedog" ]; then
+            cp -r dist/speedog "upload_stage/$ARTIFACT_NAME"
           else
-            echo "Error: Build artifact not found in dist/logdog!"
+            echo "Error: Build artifact not found in dist/speedog!"
             ls -R dist
             exit 1
           fi
@@ -117,7 +117,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           # Name used internally by GitHub Actions to store the file
-          name: logdog-${{ matrix.target_os }}-${{ matrix.arch }}
+          name: speedog-${{ matrix.target_os }}-${{ matrix.arch }}
           path: upload_stage
 
   # 3. Release Job: Release And Upload Assets
@@ -144,7 +144,7 @@ jobs:
             echo "Processing $dir..."
             
             # Construct the final zip name: name-os-arch-version.zip
-            # dir is already 'logdog-os-arch', so we just append the tag
+            # dir is already 'speedog-os-arch', so we just append the tag
             zip_name="${dir}-${{ needs.meta.outputs.tag }}.zip"
             
             # Enter directory and zip content
