@@ -1,4 +1,3 @@
-# mk/speedog.spec
 # -*- mode: python ; coding: utf-8 -*-
 
 import sys
@@ -7,13 +6,15 @@ from PyInstaller.utils.hooks import collect_all
 
 block_cipher = None
 
+# ---------------------------------------------------------
+# 1. Path Configuration
+# ---------------------------------------------------------
 spec_dir = SPECPATH
 src_path = os.path.abspath(os.path.join(spec_dir, '..', 'src'))
 icon_path = os.path.join(spec_dir, 'speedog.ico')
 
 print(f"Spec file location (SPECPATH): {spec_dir}")
 print(f"Source path resolved to: {src_path}")
-print(f"Icon path resolved to: {icon_path}")
 
 if not os.path.exists(icon_path):
     print(f"WARNING: Icon file not found at {icon_path}. Build will proceed with default icon.")
@@ -23,14 +24,33 @@ main_script = os.path.join(src_path, 'main.py')
 if not os.path.exists(main_script):
     raise FileNotFoundError(f"Cannot find main.py at: {main_script}")
 
+# ---------------------------------------------------------
+# 2. Collect Dependencies (The Fix)
+# ---------------------------------------------------------
+
+# Initialize lists
+my_datas = [
+    (os.path.join(src_path, 'speedog.conf'), '.')
+]
+my_binaries = []
+my_hiddenimports = []
+
+# Collect all resources from xspeedhack
+# This grabs the 'bin' folder, DLLs, and ensures importlib can find them.
+tmp_ret = collect_all('xspeedhack')
+my_datas += tmp_ret[0]
+my_binaries += tmp_ret[1]
+my_hiddenimports += tmp_ret[2]
+
+# ---------------------------------------------------------
+# 3. Analysis
+# ---------------------------------------------------------
 a = Analysis(
     [main_script],
     pathex=[src_path],
-    binaries=[],
-    datas=[
-        (os.path.join(src_path, 'speedog.conf'), '.')
-    ],
-    hiddenimports=[],
+    binaries=my_binaries,      # Use collected binaries
+    datas=my_datas,            # Use collected datas
+    hiddenimports=my_hiddenimports, # Use collected hidden imports
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
